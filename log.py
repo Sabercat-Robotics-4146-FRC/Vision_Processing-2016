@@ -10,11 +10,14 @@ class Log:
         msg = "[" + tag + "] " + msg + " | " + str(datetime.now()) + "\n"
         self.log_file.write( msg )
         print( msg )
+    def init( self, msg ):
+        self.write_msg( msg, "INIT" )
     def danger( self, msg ):
         self.write_msg( msg, "DANGER" )
     def debug( self, msg ):
         self.write_msg( msg, "DEBUG" )
     def info( self, msg ):
         self.write_msg( msg, "INFO" )
-    def kill( self ):
+    def kill( self, msg ):
+        self.write_msg( msg, "KILLED")
         self.log_file.close()
