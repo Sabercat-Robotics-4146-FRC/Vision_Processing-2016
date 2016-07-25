@@ -41,15 +41,15 @@ You will be prompted with four windows. An original video, a HSV converted video
 
 ### Example: Desk Toys
 
-![original]("img/original.png")
+![original]("https://github.com/Sabercat-Robotics-4146-FRC/Vision_Processing-2016/img/original.png")
 
 The original image.
 
-![trackbar]("img/trackbar.png")
+![trackbar]("https://github.com/Sabercat-Robotics-4146-FRC/Vision_Processing-2016/img/trackbar.png")
 
 I adjusted the trackbar so that to filter the original image.
 
-![filtered]("img/filtered.png")
+![filtered]("https://github.com/Sabercat-Robotics-4146-FRC/Vision_Processing-2016/img/filtered.png")
 
 The filtered image.
 
