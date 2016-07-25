@@ -7,7 +7,7 @@ Written in python, these vision processing libraries provide libraries for openc
 ## Install
 
 
-[Install](https://www.continuum.io/downloads) Anaconda on your machine. This will give you numpy and python. Type ```python``` in your command prompt or terminal. You may be a windows elitist, and this may give you an error ```'python' is not a recognized internal or external command ... ``` if this happens, you need to add python to your ```PATH``` variable. Get help [here](http://stackoverflow.com/questions/20946025/unable-to-set-up-anaconda-on-windows-path-problems). This should bring up the python interactive REPL. You should be able to type code at the prompt of ```>>>``` Now you want to make sure that you have numpy installed. In the REPL, ```import numpy``` if you get an error, you need to install numpy. In the command line, ```conda install numpy``` This will go ahead and get you numpy :+1
+[Install](https://www.continuum.io/downloads) Anaconda on your machine. This will give you numpy and python. Type ```python``` in your command prompt or terminal. You may be a windows elitist, and this may give you an error ```'python' is not a recognized internal or external command ... ``` if this happens, you need to add python to your ```PATH``` variable. Get help [here](http://stackoverflow.com/questions/20946025/unable-to-set-up-anaconda-on-windows-path-problems). This should bring up the python interactive REPL. You should be able to type code at the prompt of ```>>>``` Now you want to make sure that you have numpy installed. In the REPL, ```import numpy``` if you get an error, you need to install numpy. In the command line, ```conda install numpy``` This will go ahead and get you numpy.
 
 [Install](http://docs.opencv.org/3.1.0/d5/de5/tutorial_py_setup_in_windows.html#gsc.tab=0) opencv 3.0 python for your machine.
 
@@ -42,12 +42,17 @@ You will be prompted with four windows. An original video, a HSV converted video
 ### Example: Desk Toys
 
 ![original]("img/original.png")
+
 The original image.
+
 ![trackbar]("img/trackbar.png")
+
 I adjusted the trackbar so that to filter the original image.
+
 ![filtered]("img/filtered.png")
+
 The filtered image.
- 
+
 #### For the Raspberry pi, use
 
 ```sh
