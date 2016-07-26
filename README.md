@@ -27,10 +27,10 @@ bash installcv.bash
 
 The saber_track module provides a robust method to track objects by way of HSV colorspace filtering. This is a very common method of tracking and is very useful in the **FIRST** championship.
 
-To get a taiste of what the current version accomplishes, you can run the ```test_tracker.py``` script like so:
+To get a taiste of what the current version accomplishes, you can run the ```track.py``` script like so:
 
 ```sh
-python test_tracker.py
+python track.py
 ```
 If you're using an external usb webcam and your computer has a built-in webcam, you'll want to change the vidmode:
 ```sh
