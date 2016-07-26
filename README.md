@@ -27,10 +27,10 @@ bash installcv.bash
 
 The saber_track module provides a robust method to track objects by way of HSV colorspace filtering. This is a very common method of tracking and is very useful in the **FIRST** championship.
 
-To get a taiste of what the current version accomplishes, you can run the ```test_tracker.py``` script like so:
+To get a taiste of what the current version accomplishes, you can run the ```track.py``` script like so:
 
 ```sh
-python test_tracker.py
+python track.py
 ```
 If you're using an external usb webcam and your computer has a built-in webcam, you'll want to change the vidmode:
 ```sh
@@ -61,7 +61,7 @@ You can get the log files produced for this pocess in a file called ```debug_log
 - ```installcv.bash``` installation script for opencv on raspberry pi *(Thanks to: Thomas Cyrix)*
 - ```log.py``` is a simple logging module for streamlined debugging and records (cv2 independent)
 - ```saber_track.py``` The main module for video tracking
-- ```test_tracker.py``` A small test script showing off the saber_track module
+- ```track.py``` A small test script showing off the saber_track module
 
 
 ### Planned Implementation:
