@@ -60,7 +60,7 @@ You can get the log files produced for this pocess in a file called ```debug_log
 
 - ```installcv.bash``` installation script for opencv on raspberry pi *(Thanks to: Thomas Cyrix)*
 - ```log.py``` is a simple logging module for streamlined debugging and records (cv2 independent)
-- ```saber_track.py``` The main module for video tracking
+- ```track.py``` The main module for video tracking
 - ```test_tracker.py``` A small test script showing off the saber_track module
 
 
