@@ -34,7 +34,11 @@ python test_tracker.py
 ```
 If you're using an external usb webcam and your computer has a built-in webcam, you'll want to change the vidmode:
 ```sh
-python test_tracker.py --vidmode 1
+python track.py --vidmode 1
+```
+To get an idea of how ```track.py``` works, just use the help tag
+```sh
+python track.py --help
 ```
 
 You will be prompted with four windows. An original video, a HSV converted video, a filtered video, and a slider window that you may use to adjust the hsv filters
@@ -47,6 +51,11 @@ python3 test_tracker.py
 
 You can get the log files produced for this pocess in a file called ```debug_log.log```
 
+## Versions
+------------------
+
+*0.0.1* Added more modes and file I/O. Cleaned code.
+*0.0.0* Base opencv HSV filtering and trackbar
 ### Current utilities include:
 
 - ```installcv.bash``` installation script for opencv on raspberry pi *(Thanks to: Thomas Cyrix)*
@@ -62,3 +71,8 @@ You can get the log files produced for this pocess in a file called ```debug_log
  - distance calculation
  - efficient tracking box for stronghold balls
  - efficient goal tracking
+
+ ### TODO:
+ - turn ```test_tracker.py``` into main suit
+ - code cleanup
+ - raspberry pi usb webcam latency fix

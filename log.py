@@ -12,6 +12,10 @@ class Log:
         print( msg )
     def init( self, msg ):
         self.write_msg( msg, "INIT" )
+    def destroy( self, msg ):
+        self.write_msg( msg, "DESTROY" )
+    def warn( self, msg ):
+        self.write_msg( msg, "WARNING" )
     def danger( self, msg ):
         self.write_msg( msg, "DANGER" )
     def debug( self, msg ):
