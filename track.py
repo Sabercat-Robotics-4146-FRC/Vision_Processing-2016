@@ -28,10 +28,9 @@ args = parser.parse_args()
 r_flag = flag_it( args.raw )
 hsv_flag = flag_it( args.hsv )
 input_flag = flag_it( args.input )
-output_flag = flag_it( args.input )
+output_flag = not flag_it( args.input )
 dis_flag = not flag_it( args.nodisplay )
 t_flag = flag_it( args.trackbar )
-
 
 log = Log("debug_log")
 vs = WebcamVideoStream(src=args.vidmode).start() # Initialize the camera object on a seperate I/O thread
