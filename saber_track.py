@@ -40,7 +40,7 @@ class Tracker:
         if out_file[0]: # If output True,
             self.log.info("Using output file.")
             self.log.warn("Will not save unless you add *.write_on_exit() to quit!")
-            self.out_file = out_file[1] # set the file that will be written on save
+            self.out_file = out_file[1] # set the file that will be written on saved
         # Localize the caputure object
         self.capture = capture
         # Deal with state preferances
@@ -133,18 +133,19 @@ class Tracker:
             msk = cv2.inRange( hsv, self.lower, self.upper)
             # Make images smooth again!
             msk =  cv2.blur(msk,(5,5))
-            msk = cv2.erode(msk, None, iterations=2)
-            msk = cv2.dilate(msk, None, iterations=2)
+            msk = cv2.erode(msk, None, iterations=3)
+            msk = cv2.dilate(msk, None, iterations=3)
             self.show( 'masked', msk )
-            cnts = cv2.findContours (msk.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE )[-2]
-            cv2.drawContours(msk, cnts, -1, (0,255,0), 3)
+            im2, contours, hierarchy = cv2.findContours(msk,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
             #hull = cv2.convexHull(cnts)
-            if len(cnts) > 0:
-                pass
-                #self.log.debug(str(len(cnts)))
-                #x,y,w,h = cv2.boundingRect(cnts[0])
-                #cv2.rectangle(msk,(x,y),(x+w,y+h),(0,255,0),2)
-            self.show( 'contours', msk )
+            if len(contours) > 0:
+                #self.log.debug(str(cnts))
+                areas = [cv2.contourArea(c) for c in contours]
+                max_index = np.argmax(areas)
+                cnts = contours[max_index]
+                cv2.drawContours(msk, [cnts], 0, (0,255,0), 3)
+                x,y,w,h = cv2.boundingRect(cnts)
+                cv2.rectangle(cap,(x,y),(x+w,y+h),(255,255,255),2)
 
         if self.interactive:
             # Get the hsv maxes and mins
