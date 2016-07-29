@@ -30,5 +30,6 @@ make install
 cd ../..
 rm -r opencv
 pip install imutils
+pip install pynetworktables
 echo Completed !
 echo You now can use OpenCV 3.0.0 in both Python 2 and Python 3 !

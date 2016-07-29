@@ -5,7 +5,7 @@ import numpy as np
 import log
 from networktables import NetworkTable
 import logging
-__version__ = "0.0.01"
+__version__ = "0.0.3"
 __description__ = """
 The Tracker class provides a streamlined method of working with object tracking
 Written by GowanR
@@ -23,51 +23,70 @@ def nothing( x ):
 
 
 class Tracker:
-    # Constructor for tracker
-    def __init__( self, capture, log, port="",filters="",interactive=False, hsv=False, original=True, in_file="", out_file="", display=True ):
-        self.track = False
+
+    # Constructor. Usage object_name = Tracker( cap, log )
+    # handles all of the options for Construction
+
+    def __init__( self, capture, log, port="",filters="", hsv=False, original=True, in_file="", out_file="", display=True ):
+        self.limits = {}
         # Pass the log object
         self.log = log
-        log.init("initializing saber_track Tracker")
+        log.init( "initializing saber_track Tracker" )
+
         # If the port tag is True, set the
         if port != "":
-            NetworkTable.setIPAddress(ip)
-            NetworkTable.setClientMode()
-            NetworkTable.initialize()
-            self.smt_dash = NetworkTable.getTable("SmartDashboard")
-        # If in interactive mode, initialize HSV trackbars
-        if interactive:
-            if in_file == "":
-                if filters != "":
-                    filters = filters.split(" ")
-                    self.limits = {}
-                    for i in filters:
-                        self.limits[i] = [ [0,0,0], [0,0,0] ]
-                    for w, _ in self.limits.items():
-                        self.init_trackbar( w )
-                    self.set_limits_trackbar( self.limits )
-        # Display determines weather to display windows
-        self.display = display
+            NetworkTable.setIPAddress( port )
+            NetworkTable.setClientMode( )
+            NetworkTable.initialize( )
+            self.smt_dash = NetworkTable.getTable( "SmartDashboard" )
+
+        # initialize the filters. If the filter is the default: "", it will not create trackbars for it.
+        self.init_filters( filters )
+
+        # Deal with filters
+        self.display = display # If this is True, It will be in a windowless mode.
+
         # Deal with inputs and outputs
-        if in_file != "": # If input is not default,
-            self.set_input( in_file ) # Load HSV values from .track file, apply them
-            self.track = True
-        if out_file != "": # If output True,
-            self.log.info("Using output file.")
-            self.log.warn("Will not save unless you add *.write_on_exit() to quit!")
-            self.out_file = out_file # set the file that will be written on saved
+        self.out_file = str( out_file ) # set the file that will be written on saved
+        self.set_input( str(in_file) ) # Load HSV values from .track file, apply them
         # Localize the caputure object
         self.capture = capture
         # Deal with state preferances
-        self.original = original
-        log.info("using original: " + str(original))
-        self.interactive = interactive
-        log.info("using interactive: " + str(interactive))
-        self.hsv = hsv
-        log.info("using hsv: " + str(hsv))
-    # Initialize trackbar
-    def init_trackbar( self, window ):
-        self.log.init("initializing trackbars" + str(window) )
+        self.original = original # if True, this will make a raw image with the trackerbox visible
+        log.info("using original: " + str(original) )
+        self.hsv = hsv # if True, it will display a window with the hsv colorspace displayed
+        log.info( "using hsv: " + str(hsv) )
+        # if there are any color limits (Upper and Lower hsv values to track) make the tracking code runs
+        if len( self.limits ) > 0:
+            self.track = True
+        else:
+            self.track = False
+        self.log.info( "Tracking: " + str(self.track) )
+
+    # The self.init_filters( filters ) function will take a string of filters and break it up by spaces
+    # Each whitespace isolated string will become the name of a limit and trackbar.
+    # Example, the self.init_filters( "hello world") would split the string into two windows, "hello" and "world"
+    # The windows will be trackbars and will get their own tracking bounding box, tag, and binary color window
+
+    def init_filters( self, filters ):
+        if filters != "": # if there are actually filters given,
+            filters = filters.split(" ") # split the filters by spaces, "red blue" => [ "red", "blue" ]
+            self.filters = filters # set the global filters
+            for i in filters: # cycle throught the filters
+                self.init_trackbar( i ) # initializing a trackbar for each filter
+                self.limits[ i ] = [ self.get_upper_trackbar( i ) , self.get_lower_trackbar( i ) ] # add a limit trackbar values
+            self.interactive = True # make the session interactive
+        else:
+            self.filters = [] # make filters empty when no filters given
+            self.interactive = False # if no filters were given, the session is not interactive
+
+    # Initialize trackbar with window name
+    # Usage: self.init_trackbar( "window_name" )
+    # will make a window with the given name and initialize trackbars that
+    # represent the HSV minimum and maximum values to filter
+
+    def init_trackbar( self, window ): #
+        self.log.init("initializing trackbars " + str(window) )
         cv2.namedWindow( window )
         cv2.createTrackbar('H_Max',window,0,255,nothing)
         cv2.createTrackbar('H_Min',window,0,255,nothing)
@@ -75,106 +94,165 @@ class Tracker:
         cv2.createTrackbar('S_Min',window,0,255,nothing)
         cv2.createTrackbar('V_Max',window,0,255,nothing)
         cv2.createTrackbar('V_Min',window,0,255,nothing)
-        self.track = True
-    # Track an explict colorspace
-    def track_color( lower, upper ):
-        self.upper = upper
-        self.lower = lower
-        self.track = True
+
     # Loads input file, sets upper and lower to the provided values
+    # Usage: self.set_input( "in_file_name" )
+    # !! Can only load the *.track files !! ( you may also write .track files yourself )
+
     def set_input( self, name ):
-        self.limits = {}
+        if name == "": # if no file is given, stop the function
+            return
         self.log.init( "Reading trackfile: " + name + ".track" )
-        fs = open( name + ".track", "r" )
-        in_file = []
-        for line in fs:
-            in_file.append( line )
-        for i in range(len(in_file)):
-            if i % 3 == 0:
-                l = np.array(map( lambda x: int(x), filter(lambda x: not_whitespace(x),in_file[i+1].split(" ")) ))
-                u = np.array(map( lambda x: int(x), filter(lambda x: not_whitespace(x),in_file[i+2].split(" ")) ))
-                self.limits[in_file[i]] = [ l, u ]
-        fs.close()
-        for k, v in self.limits.items():
-            self.init_trackbar( k )
-            self.set_upper_trackbar( v[0], k )
-            self.set_lower_trackbar( v[1], k )
+        fs = open( name + ".track", "r" ) # open the file under a .track extention
+        in_file = [] # tokenized file object
+        for line in fs: # cycle through each line of the file,
+            in_file.append( line ) # tokenize the line and append it to in_file list
+        for i in range(len(in_file)): # for all of the tokenized values,
+            if i % 3 == 0: # for every third line, ( this is the name of the color limits )
+                # parse the value below the name as the upper and lower values
+                u = np.array(map( lambda x: int(x), filter(lambda x: not_whitespace(x),in_file[i+1].split(" ")) ))
+                l = np.array(map( lambda x: int(x), filter(lambda x: not_whitespace(x),in_file[i+2].split(" ")) ))
+                # add these limits to the limits variable
+                self.limits[in_file[i]] = [ u, l ]
+        fs.close( ) # close the file
+
+    # Updates a dictionary to the networktable
+    # Usage: self.update_table( { "key" : value } )
+    # will make a networktable: | key | value |
+
     def update_table( self, value_dict ):
         for k, v in value_dict.items(): # for each value in the dictionary,
             smt_dash.putNumber( k, v ) # put the values of the dictionarys on the networktable
         pass
+
     # Saves the HSV values to the provided out_file if it exists
+    # The HSV values are stored in self.limits
+    # Usage: self.save( )
+
     def save( self ):
-        try:
-            assert(self.out_file) # See if the out_file exists, if so,
-            self.log.destroy("Safe exit and saveing trackfile: " + str(self.out_file) + ".track")
-            file = open( str(self.out_file) + ".track", "w+") # Open out_file
-            for k, v in self.limits.items():
-                file.write( k )
-                file.write( str(v[0])[1:len(str(v[0]))-1] + " \n")
-                file.write( str(v[1])[1:len(str(v[1]))-1] + " \n")
-            file.close() # Close the out_file
-        except (RuntimeError, TypeError, NameError, AttributeError):
+        if self.out_file == "": # If the out_file is not given, dont save anything
             self.log.destroy("Exiting saber_track, nothing to save")
-    # Sets the upper trackbar values. Usage: value = [ h, s, v ]
+        else: # if an out_file was given,
+            file = open( str(self.out_file) + ".track", "w+") # Open out_file
+            for k, v in self.limits.items(): # cycle through the HSV limits by key, k, and value, v
+                if k in self.filters: # if the key is in the filters that have trackbars
+                    # Set the values to the trackbar values
+                    v[0] = np.array(self.get_upper_trackbar( k ))
+                    v[1] = np.array(self.get_lower_trackbar( k ))
+                # Write the file name
+                esc = "\n"
+                if k[len(k)-1:len(k)] == "\n":
+                    esc = ""
+                file.write( k + esc )
+                file.write( str(v[0])[1:len(str(v[0]))-1] + " \n") # write the upper values seperated by spaces only
+                file.write( str(v[1])[1:len(str(v[1]))-1] + " \n") # write the lower values seperated by space only
+            file.close() # Close the out_file
+            self.log.info( "Wrote to file " + str(self.out_file) + ".track success." )
+
+    # Sets the upper trackbar values.
+    # Usage: self.set_upper_trackbar( [ h, s, v ], "window_name")
+    # sets the trackbar's values to the given value
+
     def set_upper_trackbar( self, value, window ):
         cv2.setTrackbarPos('H_Max',window,value[0])
         cv2.setTrackbarPos('S_Max',window,value[1])
         cv2.setTrackbarPos('V_Max',window,value[2])
-    # Sets the lower trackbar values. Usage: value = [ h, s, v ]
+
+    # Sets the lower trackbar values.
+    # Usage: self.set_lower_trackbar( [ h, s, v ], "window_name" )
+    # Sets the lower trackbar values to the given values
+
     def set_lower_trackbar( self, value, window ):
         cv2.setTrackbarPos('H_Min',window,value[0])
         cv2.setTrackbarPos('S_Min',window,value[1])
         cv2.setTrackbarPos('V_Min',window,value[2])
-    # Gets the values of the upper HSV values from the trackbar, returns [ h, s, v ]
+
+    # Gets the values of the upper HSV values from the trackbar
+    # Usage: self.get_upper_trackbar( "window_name" )
+    # Returns a numpy array: ap.array( [ h, s, v ] )
+
     def get_upper_trackbar( self, window ):
         hh = cv2.getTrackbarPos('H_Max',window)
         sh = cv2.getTrackbarPos('S_Max',window)
         vh = cv2.getTrackbarPos('V_Max',window)
-        return [ hh, sh, vh ]
-    # Gets the value of the upper HSV values from the trackbar, returns [ h, s, v ]
+        return np.array([ hh, sh, vh ])
+
+    # Gets the value of the lower HSV values from the trackbar
+    # Usage: self.get_lower_trackbar( "window_name" )
+    # Returns numpy array: np.array( [ h, s, v ] )
+
     def get_lower_trackbar( self, window ):
         hl = cv2.getTrackbarPos('H_Min',window)
         sl = cv2.getTrackbarPos('S_Min',window)
         vl = cv2.getTrackbarPos('V_Min',window)
-        return [ hl, sl, vl ]
+        return np.array([ hl, sl, vl ])
+
     # Sets upper and lower values to their coresponding trackbar
+    # Usage: self.set_limits_trackbar( { "window_name": [ np.array([h,s,v]), np.array([h,s,v]) ] } )
+    # set the value to their corresponding trackbar if the key is to be filtered
+
     def set_limits_trackbar( self, value ):
-        for k, v in value.items():
-            v[0] = np.array(self.get_upper_trackbar( k ))
-            v[1] = np.array(self.get_lower_trackbar( k ))
+        for k, v in value.items( ):
+            if k in self.filters:
+                v[0] = np.array(self.get_upper_trackbar( k ))
+                v[1] = np.array(self.get_lower_trackbar( k ))
+
     # Only shows windows when display is set to True
+    # Usage: self.show( "window_name", image_matrix )
+
     def show( self, win_name, value ):
         if self.display:
             cv2.imshow( win_name, value )
-    def get_bounding_rect( self, cap, hsv, win ):
-        lower = self.get_lower_trackbar( win )
-        upper = self.get_upper_trackbar( win )
-        msk = cv2.inRange( hsv, np.array(lower), np.array(upper))
+
+    # Gets the largest bounding box by area of a colorspace within the upper and lower values
+    # with respect to the capture
+    # Usage: self.get_bounding_rect( capture_to_analyse, capture_to_show, "window_name", np.array([h,s,v]), np.array([h,s,v]) )
+    # You may set the argument return_value = True if you would like the funiton to return the box values
+    # TODO:
+    # - Reduce noise
+    # - labling
+
+    def get_bounding_rect( self, key, cap, win_cap, win, upper, lower, return_value=False, text=True ):
+        hsv = cv2.cvtColor( cap, cv2.COLOR_BGR2HSV )
+        hsv = cv2.blur(hsv,(5,5)) # blur the image for smoothing
+        msk = cv2.inRange( hsv, lower, upper ) # get an object of all of the pixels with color values in the range
         # Make images smooth again!
-        msk =  cv2.blur(msk,(5,5))
-        msk = cv2.erode(msk, None, iterations=3)
-        msk = cv2.dilate(msk, None, iterations=3)
-        if self.interactive:
-            self.show( str(win)+ " Image", msk )
+        #msk = cv2.blur(msk,(5,5))
+        msk = cv2.erode(msk, None, iterations=3) # erode the image to reduce background noise
+        msk = cv2.dilate(msk, None, iterations=3) # dilate the image to reduce background noise
+        if self.display: # if the display is true,
+            self.show( str(win)+ " Image", msk ) # show the binary range image
+        # Get the image contours in the mask
         im2, contours, hierarchy = cv2.findContours( msk, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE )
+        # If a contour was found
         if len(contours) > 0:
-            areas = [cv2.contourArea(c) for c in contours]
-            max_index = np.argmax(areas)
-            cnts = contours[max_index]
-            cv2.drawContours(msk, [cnts], 0, (0,255,0), 3)
-            x,y,w,h = cv2.boundingRect(cnts)
-            cv2.rectangle(cap,(x,y),(x+w,y+h),(255,255,255),2)
+            areas = [cv2.contourArea(c) for c in contours] # get the area of each contour
+            max_index = np.argmax(areas) # get the index of the largest contour by area
+            cnts = contours[max_index] # get the largest contout by area
+            cv2.drawContours(msk, [cnts], 0, (0,255,0), 3) # Draw the contours to the mask image
+            x,y,w,h = cv2.boundingRect(cnts) #  get the bouding box information about the contour
+            cv2.rectangle(win_cap,(x,y),(x+w,y+h),(255,255,255),2) # Draw rectangle on the image to represent the bounding box
+            if text:
+                cv2.putText( win_cap , str(key), ( x, y+h ), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
+            if return_value: # if the function needs a return value
+                return [ x, y, w, h ] # return an array of the bounding box values
+
     # Update function should be invoked whenever the camera frame needs refreshing
+    # Usage: self.update( )
+    # This should be embedded inside a while loop
+
     def update ( self ):
         cap = self.capture.read( ) # Capture the frame from the webcam
-        if self.hsv or self.track: # Convert color space to HSV if any options need it
-            hsv = cv2.cvtColor( cap, cv2.COLOR_BGR2HSV )
+        show_cap = cap.copy()
         # Render needed video outputs
-        if self.original:
-            self.show( 'original', cap )
         if self.hsv:
-            self.show( 'hsv', hsv)
-        if self.track:
-            for k, v in self.limits.items():
-                self.get_bounding_rect( cap, hsv, k )
+            hsv = cv2.cvtColor( cap, cv2.COLOR_BGR2HSV )
+            self.show( 'hsv', hsv )
+        if self.track: # if the program should track an item
+            for k, v in self.limits.items( ): # Cycle through each item in the limits
+                if k in self.filters: # if the value is in the filters given,
+                    v[0] = np.array( self.get_upper_trackbar( k ) ) # set the upper to the trackbar value
+                    v[1] = np.array( self.get_lower_trackbar( k ) ) # set the lower to the trackbar value
+                self.get_bounding_rect( k, cap, show_cap, k, v[0], v[1] ) # Get the bounding rect of the capture with limits
+        if self.original:
+            self.show( 'original', show_cap )

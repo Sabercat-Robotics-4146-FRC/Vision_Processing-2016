@@ -11,9 +11,10 @@ Written in python, these vision processing libraries provide libraries for openc
 
 [Install](http://docs.opencv.org/3.1.0/d5/de5/tutorial_py_setup_in_windows.html#gsc.tab=0) opencv 3.0 python for your machine.
 
-After installing opencv on your machine, you will need the imutils module.
+After installing opencv on your machine, you will need the imutils module and pynetworktables module.
 ```python
   pip install imutils
+  pip install pynetworktables
 ```
 
 ## Install on Raspberry Pi
@@ -23,37 +24,87 @@ Just run the ```installcv.bash``` script written by Thomas Cyrix and updated for
 bash installcv.bash
 ```
 
-## Example usage of the saber_track module
+## About
+--------
 
 The saber_track module provides a robust method to track objects by way of HSV colorspace filtering. This is a very common method of tracking and is very useful in the **FIRST** championship.
 
-To get a taiste of what the current version accomplishes, you can run the ```track.py``` script like so:
+## track.py
+-----------
 
-```sh
-python track.py
-```
-If you're using an external usb webcam and your computer has a built-in webcam, you'll want to change the vidmode:
+All of the functions of the *saber_track* Module can be demonstrated in the program ```track.py```. For a quick look at the command line options that the *track* program porvides, use ```python track.py --help``` This will give you the options and their description. The following will give a more detailed gist of its functionality.
+
+## Video modes
+--------------
+
+The first thing you need is to give the program which camera to use. By default, the camera stream will be 0. If you have two webcams, you may change the vidmode to a different stream with the ```--vidmode``` tag.
+
+If you're using an external usb webcam and your computer has a built-in webcam, you'll want to change try vidmode 1:
 ```sh
 python track.py --vidmode 1
 ```
-To get an idea of how ```track.py``` works, just use the help tag
-```sh
-python track.py --help
+## Raw footage
+--------------
+
+In order to get the raw footage of the camera, you will want to add the raw tag to the program: ```python track.py --raw 1``` Using the raw tag will also be needed for recieving a video of the tracking bounding box.
+
+## Filters
+----------
+
+The program uses colors to track objects. This means that it may get confused if there is a lot of 'noise' it the image. To tell the program which object it should track, we use filters. Filters are just a color reduction where we create an image from the camera stream where each pixel that falls within the color range will be white, and the pixels that are outside of the defined color range are black. We use sliders to adjust the color filters. In order to simplify the color space, we use [HSV](https://en.wikipedia.org/wiki/HSL_and_HSV). HSV is a colorspace that stands for Hue, Saturation, and Value. We can tell the program to prompt trackbars that we may adjust in order to change the filtering range. To do this, simply use ```python track.py --raw 1 -f "my_filter"``` This will create a trackbar, masked image, and bounding box called *"my_filter."* The values set in the filter's trackbars will be used to find the bounding box of the object.
+
+You can use multiple filters by putting spaces in the ```-f``` tag like so: ```python track.py --raw 1 -f "filter_one filter_two"``` this will create two filters, one called *"filter_one"* and the other called *"filter_two."* You will be greeted with two masked windows and trackbars.
+
+## I/O Support
+--------------
+
+```track.py``` and therefore saber_track support saving and loading hsv colorspaces. This way, you may adjust the hsv limits before the competition and adjust for competition lighting and then use that same file for the actual game. Use the ```-i``` or ```--input``` tags for imput ```.track``` files. Use the ```-o``` or ```--output``` tags for setting the output file. *You do not have to add the .track file extention to the file name when using these tags*
+
+### Game Example
+----------------
+
+You'll want to adjust the color space in the enviroment you will use it in. This means you need to tweak the hsv values on game day in order to adjust for lighting and unusual noise.
+
+For instance if you are trying to track the goal, you should go to the practice match and adjust the HSV values.
+
+```
+python track.py --raw 1 -f "goal" -o goal_file
 ```
 
-You will be prompted with four windows. An original video, a HSV converted video, a filtered video, and a slider window that you may use to adjust the hsv filters
+This will generate a track file when you **QUIT THE SESSION WITH THE Q KEY** If you didn't notice the bold caps, you need to use the q key on exit. You cannot use the keyboard disrupts that command lines have.
+
+If you generated that file without the raspberry pi, you may transfer the file to the *scp* utility.
+
+Your pi will likely be onboard the robot in order to reduce latency. This means that you cannot go through default boot prosedures. You will need to create a bash [script](https://www.raspberrypi.org/forums/viewtopic.php?f=66&t=61782) which starts the vision program.
+
+In that script you will want to have some load command.
+
+```
+python3 track.py -n -i goal_file -p <networktable ip here>
+```
+
+You may be wondering, "where the hell did the ```-n``` an ```-p``` tags come from?"
+Well, the ```-n``` tag stands for no display. This means that the program will not initialize any windows.
+The ```-p``` tag will set the ip of the network tables so that you can get the bounding box values of the goal.
 
 #### For the Raspberry pi, use
 
 ```sh
-python3 test_tracker.py
+python3 track.py
+```
+instead of
+```sh
+python track.py
 ```
 
-You can get the log files produced for this pocess in a file called ```debug_log.log```
+## Log files
+
+The debug log generated should be located in ```debug_log.log```
 
 ## Versions
 ------------------
-
+*0.0.3* Added tagging support. Fixed bugs. Cleaned code. Added more documentation.
+*0.0.2* Added multiple filtering capabilities.
 *0.0.1* Added more modes and file I/O. Cleaned code.
 *0.0.0* Base opencv HSV filtering and trackbar
 ### Current utilities include:
@@ -65,14 +116,12 @@ You can get the log files produced for this pocess in a file called ```debug_log
 
 
 ### Planned Implementation:
-
- - video color picker with box selection
- - value pipline to driverstation code
  - distance calculation
- - efficient tracking box for stronghold balls
- - efficient goal tracking
+ - high preformance distribution for the Raspberry pi
 
  ### TODO:
- - turn ```test_tracker.py``` into main suit
+ - Update Documentation
  - code cleanup
+ - code optimization
+ - gpgpu acceleration
  - raspberry pi usb webcam latency fix
