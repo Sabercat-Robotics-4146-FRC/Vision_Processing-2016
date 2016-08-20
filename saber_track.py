@@ -1,10 +1,12 @@
 import cv2
 from imutils.video import WebcamVideoStream
 import imutils
+import json
 import numpy as np
 import log
 from networktables import NetworkTable
 import logging
+import time
 __version__ = "0.0.3"
 __description__ = """
 The Tracker class provides a streamlined method of working with object tracking
@@ -48,7 +50,7 @@ class Tracker:
 
         # Deal with inputs and outputs
         self.out_file = str( out_file ) # set the file that will be written on saved
-        self.set_input( str(in_file) ) # Load HSV values from .track file, apply them
+        self.set_input( str(in_file) ) # Load HSV values from .json file, apply them
         # Localize the caputure object
         self.capture = capture
         # Deal with state preferances
@@ -97,23 +99,15 @@ class Tracker:
 
     # Loads input file, sets upper and lower to the provided values
     # Usage: self.set_input( "in_file_name" )
-    # !! Can only load the *.track files !! ( you may also write .track files yourself )
+    # !! Can only load the *.json files !! ( you may also write .json files yourself )
 
     def set_input( self, name ):
         if name == "": # if no file is given, stop the function
             return
-        self.log.init( "Reading trackfile: " + name + ".track" )
-        fs = open( name + ".track", "r" ) # open the file under a .track extention
-        in_file = [] # tokenized file object
-        for line in fs: # cycle through each line of the file,
-            in_file.append( line ) # tokenize the line and append it to in_file list
-        for i in range(len(in_file)): # for all of the tokenized values,
-            if i % 3 == 0: # for every third line, ( this is the name of the color limits )
-                # parse the value below the name as the upper and lower values
-                u = np.array(map( lambda x: int(x), filter(lambda x: not_whitespace(x),in_file[i+1].split(" ")) ))
-                l = np.array(map( lambda x: int(x), filter(lambda x: not_whitespace(x),in_file[i+2].split(" ")) ))
-                # add these limits to the limits variable
-                self.limits[in_file[i]] = [ u, l ]
+        self.log.init( "Reading trackfile: " + name + ".json" )
+        fs = open( name + ".json", "r" ) # open the file under a .json extention
+        data = json.loads( fs.read() )
+        self.limits.update( data )
         fs.close( ) # close the file
 
     # Updates a dictionary to the networktable
@@ -133,21 +127,10 @@ class Tracker:
         if self.out_file == "": # If the out_file is not given, dont save anything
             self.log.destroy("Exiting saber_track, nothing to save")
         else: # if an out_file was given,
-            file = open( str(self.out_file) + ".track", "w+") # Open out_file
-            for k, v in self.limits.items(): # cycle through the HSV limits by key, k, and value, v
-                if k in self.filters: # if the key is in the filters that have trackbars
-                    # Set the values to the trackbar values
-                    v[0] = np.array(self.get_upper_trackbar( k ))
-                    v[1] = np.array(self.get_lower_trackbar( k ))
-                # Write the file name
-                esc = "\n"
-                if k[len(k)-1:len(k)] == "\n":
-                    esc = ""
-                file.write( k + esc )
-                file.write( str(v[0])[1:len(str(v[0]))-1] + " \n") # write the upper values seperated by spaces only
-                file.write( str(v[1])[1:len(str(v[1]))-1] + " \n") # write the lower values seperated by space only
-            file.close() # Close the out_file
-            self.log.info( "Wrote to file " + str(self.out_file) + ".track success." )
+            jfile = open( self.out_file + ".json", "w+" )
+            jfile.write( str ( json.dumps (self.limits) ) )
+            jfile.close() # Close the out_file
+            self.log.info( "Wrote to file " + str(self.out_file) + ".json success." )
 
     # Sets the upper trackbar values.
     # Usage: self.set_upper_trackbar( [ h, s, v ], "window_name")
@@ -175,7 +158,7 @@ class Tracker:
         hh = cv2.getTrackbarPos('H_Max',window)
         sh = cv2.getTrackbarPos('S_Max',window)
         vh = cv2.getTrackbarPos('V_Max',window)
-        return np.array([ hh, sh, vh ])
+        return [ hh, sh, vh ]
 
     # Gets the value of the lower HSV values from the trackbar
     # Usage: self.get_lower_trackbar( "window_name" )
@@ -185,7 +168,7 @@ class Tracker:
         hl = cv2.getTrackbarPos('H_Min',window)
         sl = cv2.getTrackbarPos('S_Min',window)
         vl = cv2.getTrackbarPos('V_Min',window)
-        return np.array([ hl, sl, vl ])
+        return [ hl, sl, vl ]
 
     # Sets upper and lower values to their coresponding trackbar
     # Usage: self.set_limits_trackbar( { "window_name": [ np.array([h,s,v]), np.array([h,s,v]) ] } )
@@ -194,8 +177,8 @@ class Tracker:
     def set_limits_trackbar( self, value ):
         for k, v in value.items( ):
             if k in self.filters:
-                v[0] = np.array(self.get_upper_trackbar( k ))
-                v[1] = np.array(self.get_lower_trackbar( k ))
+                v[0] = self.get_upper_trackbar( k )
+                v[1] = self.get_lower_trackbar( k )
 
     # Only shows windows when display is set to True
     # Usage: self.show( "window_name", image_matrix )
@@ -215,7 +198,7 @@ class Tracker:
     def get_bounding_rect( self, key, cap, win_cap, win, upper, lower, return_value=False, text=True ):
         hsv = cv2.cvtColor( cap, cv2.COLOR_BGR2HSV )
         hsv = cv2.blur(hsv,(5,5)) # blur the image for smoothing
-        msk = cv2.inRange( hsv, lower, upper ) # get an object of all of the pixels with color values in the range
+        msk = cv2.inRange( hsv, np.array(lower), np.array(upper) ) # get an object of all of the pixels with color values in the range
         # Make images smooth again!
         #msk = cv2.blur(msk,(5,5))
         msk = cv2.erode(msk, None, iterations=3) # erode the image to reduce background noise
@@ -251,8 +234,8 @@ class Tracker:
         if self.track: # if the program should track an item
             for k, v in self.limits.items( ): # Cycle through each item in the limits
                 if k in self.filters: # if the value is in the filters given,
-                    v[0] = np.array( self.get_upper_trackbar( k ) ) # set the upper to the trackbar value
-                    v[1] = np.array( self.get_lower_trackbar( k ) ) # set the lower to the trackbar value
+                    v[0] = self.get_upper_trackbar( k ) # set the upper to the trackbar value
+                    v[1] = self.get_lower_trackbar( k ) # set the lower to the trackbar value
                 self.get_bounding_rect( k, cap, show_cap, k, v[0], v[1] ) # Get the bounding rect of the capture with limits
         if self.original:
             self.show( 'original', show_cap )
