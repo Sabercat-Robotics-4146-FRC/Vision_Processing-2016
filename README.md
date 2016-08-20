@@ -19,7 +19,7 @@ After installing opencv on your machine, you will need the imutils module and py
 
 ## Install on Raspberry Pi
 
-~Raspbian~ *We changed OS to Arch* for frame rate reasons. Arch may be installed with the images provided in [this](https://www.raspberrypi.org/forums/viewtopic.php?f=91&t=109545) forum thread. When you have Arch running, login to root with username: `root` and password: `root`
+~~Raspbian~~ *We changed OS to Arch* for frame rate reasons. Arch may be installed with the images provided in [this](https://www.raspberrypi.org/forums/viewtopic.php?f=91&t=109545) forum thread. When you have Arch running, login to root with username: `root` and password: `root`
 
 **BEFORE PROCEEDING, UPDATE SYSTEM** with `pacman -Syu`
 
