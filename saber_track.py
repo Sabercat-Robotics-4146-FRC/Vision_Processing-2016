@@ -216,11 +216,13 @@ class Tracker:
             cv2.drawContours(msk, [cnts], 0, (0,255,0), 3) # Draw the contours to the mask image
             x,y,w,h = cv2.boundingRect(cnts) #  get the bouding box information about the contour
             cv2.rectangle(win_cap,(x,y),(x+w,y+h),(255,255,255),2) # Draw rectangle on the image to represent the bounding box
-            if self.smt_dash != None:
+            try:
                 self.smt_dash.putNumber('vis_x', x)
                 self.smt_dash.putNumber('vis_y', y)
                 self.smt_dash.putNumber('vis_w', w)
                 self.smt_dash.putNumber('vis_h', h)
+            except Exception:
+                pass
             if text:
                 cv2.putText( win_cap , str(key), ( x, y+h ), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
             if return_value: # if the function needs a return value
