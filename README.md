@@ -26,9 +26,13 @@ After installing opencv on your machine, you will need the imutils module and py
 ### Install Dependencies
 
 ```pacman -S libjpeg-turbo```
+
 ```pacman -S python```
+
 ```pacman -S python-numpy```
+
 ```pacman -S python-pip```
+
 ```pacman -S opencv```
 
 ## About
