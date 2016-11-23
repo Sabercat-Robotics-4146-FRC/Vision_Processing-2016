@@ -6,40 +6,26 @@ import argparse
 from log import Log
 from saber_track import Tracker
 import argparse
+import json
 
 def flag_it( value ):
-    if value == None:
-        return False
-    else:
-        return True
-
+    return not value == None
 # Parse some command line arguments!
 parser = argparse.ArgumentParser(description='HSV color sliders for video.')
-parser.add_argument('-v', '--vidmode', dest='vidmode', type=int, help='Usage: \"--video_mode 0\" for webcam', default=0 )
-parser.add_argument('-i', '--input', dest='input', type=str, help='The .track input file', default="" )
-parser.add_argument('-o', '--output', dest='output', type=str, help='The .track output file', default="" )
-parser.add_argument('-f', '--filters', help='Enable the trackbar with filters', default = "" )
-parser.add_argument('-n', '--nodisplay', help='Weather to display images' )
-parser.add_argument('--hsv', help='Weather to display hsv' )
-parser.add_argument('--raw', help='Weather to display raw footage' )
-parser.add_argument('-p', '--port', help='Which port to use for the networktables', default="" )
+parser.add_argument('-s', '--settings', dest='st', type=str, help='The .json settings file', default="" )
+
 args = parser.parse_args()
 
-r_flag = flag_it( args.raw )
-hsv_flag = flag_it( args.hsv )
-dis_flag = not flag_it( args.nodisplay )
-log = Log("debug_log")
-vs = WebcamVideoStream(src=args.vidmode).start() # Initialize the camera object on a seperate I/O thread
-settings = {
-    "port" : args.port,
-    "filters": args.filters,
-    "hsv": hsv_flag,
-    "original": r_flag,
-    "display": dis_flag,
-    "in_file": args.input,
-    "out_file": args.output,
-}
-#port=args.port,filters=args.filters,hsv=hsv_flag,original=r_flag,display=dis_flag,in_file=args.input, out_file=args.output
+if not args.st == "":
+    with open( args.st + ".json")as data_file:
+        settings = json.loads(data_file.read())
+else:
+    raise Exception("Please provide settings")
+
+log = Log(settings["log_name"])
+log.debug("Mode: " + str(settings["vidmode"]) )
+vs = WebcamVideoStream(src=int(settings["vidmode"])).start() # Initialize the camera object on a seperate I/O thread
+
 st = Tracker( vs, log, settings )
 
 while True:

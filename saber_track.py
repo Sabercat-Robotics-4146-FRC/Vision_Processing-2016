@@ -230,7 +230,6 @@ class Tracker:
 
     def update ( self ):
         cap = self.capture.read( ) # Capture the frame from the webcam
-
         show_cap = cap.copy()
         # Render needed video outputs
         if self.settings["hsv"]:
