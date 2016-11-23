@@ -30,7 +30,18 @@ hsv_flag = flag_it( args.hsv )
 dis_flag = not flag_it( args.nodisplay )
 log = Log("debug_log")
 vs = WebcamVideoStream(src=args.vidmode).start() # Initialize the camera object on a seperate I/O thread
-st = Tracker( vs, log, port=args.port,filters=args.filters,hsv=hsv_flag,original=r_flag,display=dis_flag,in_file=args.input, out_file=args.output )
+settings = {
+    "port" : args.port,
+    "filters": args.filters,
+    "hsv": hsv_flag,
+    "original": r_flag,
+    "display": dis_flag,
+    "in_file": args.input,
+    "out_file": args.output,
+}
+#port=args.port,filters=args.filters,hsv=hsv_flag,original=r_flag,display=dis_flag,in_file=args.input, out_file=args.output
+st = Tracker( vs, log, settings )
+
 while True:
     st.update()
     # Quit with the "q" key!

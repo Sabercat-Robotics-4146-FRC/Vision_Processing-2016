@@ -26,7 +26,6 @@ except Exception as e:
     print( e )
     print( "> No input json file given. Stop that. <" )
     raise
-
 try:
     NetworkTable.setIPAddress( sys.argv[2] )
     NetworkTable.setClientMode( )

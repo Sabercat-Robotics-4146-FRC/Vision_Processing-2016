@@ -15,10 +15,7 @@ Written by GowanR
 
 # returns True if the argument is not whitespace, False if it is
 def not_whitespace( x ):
-    if x != " " and x != "" and x != "\n":
-        return True
-    else:
-        return False
+    return x != " " and x != "" and x != "\n"
 # Does nothing ... or does it?
 def nothing( x ):
     pass
@@ -29,41 +26,40 @@ class Tracker:
     # Constructor. Usage object_name = Tracker( cap, log )
     # handles all of the options for Construction
 
-    def __init__( self, capture, log, port="",filters="", hsv=False, original=True, in_file="", out_file="", display=True ):
+    def __init__( self, capture, log, settings ):
+        # port="",filters="", hsv=False, original=True, in_file="", out_file="", display=True
         self.limits = {}
         # Pass the log object
         self.log = log
         log.init( "initializing saber_track Tracker" )
-
+        self.settings = settings
         # If the port tag is True, set the
-        if port != "":
+        if settings["port"] != "":
             logging.basicConfig( level=logging.DEBUG )
-            NetworkTable.setIPAddress( port )
+            NetworkTable.setIPAddress( settings["port"] )
             NetworkTable.setClientMode( )
             NetworkTable.initialize( )
             self.smt_dash = NetworkTable.getTable( "SmartDashboard" )
 
         # initialize the filters. If the filter is the default: "", it will not create trackbars for it.
-        self.init_filters( filters )
-
-        # Deal with filters
-        self.display = display # If this is True, It will be in a windowless mode.
+        self.init_filters( settings["filters"] )
 
         # Deal with inputs and outputs
-        self.out_file = str( out_file ) # set the file that will be written on saved
-        self.set_input( str(in_file) ) # Load HSV values from .json file, apply them
+        self.settings["out_file"] = str( self.settings["out_file"] ) # set the file that will be written on saved
+
+        if settings["in_file"] != "":
+            self.log.init( "Reading trackfile: " + settings["in_file"] + ".json" )
+            fs = open( name + ".json", "r" ) # open the file under a .json extention
+            data = json.loads( fs.read() )
+            self.limits.update( data )
+            fs.close( )
+
+
         # Localize the caputure object
         self.capture = capture
-        # Deal with state preferances
-        self.original = original # if True, this will make a raw image with the trackerbox visible
-        log.info("using original: " + str(original) )
-        self.hsv = hsv # if True, it will display a window with the hsv colorspace displayed
-        log.info( "using hsv: " + str(hsv) )
         # if there are any color limits (Upper and Lower hsv values to track) make the tracking code runs
-        if len( self.limits ) > 0:
-            self.track = True
-        else:
-            self.track = False
+        self.track = len( self.limits ) > 0
+
         self.log.info( "Tracking: " + str(self.track) )
 
     # The self.init_filters( filters ) function will take a string of filters and break it up by spaces
@@ -125,13 +121,13 @@ class Tracker:
     # Usage: self.save( )
 
     def save( self ):
-        if self.out_file == "": # If the out_file is not given, dont save anything
+        if self.settings["out_file"] == "": # If the out_file is not given, dont save anything
             self.log.destroy("Exiting saber_track, nothing to save")
         else: # if an out_file was given,
-            jfile = open( self.out_file + ".json", "w+" )
+            jfile = open( self.settings["out_file"] + ".json", "w+" )
             jfile.write( str ( json.dumps (self.limits) ) )
             jfile.close() # Close the out_file
-            self.log.info( "Wrote to file " + str(self.out_file) + ".json success." )
+            self.log.info( "Wrote to file " + str(self.settings["out_file"]) + ".json success." )
 
     # Sets the upper trackbar values.
     # Usage: self.set_upper_trackbar( [ h, s, v ], "window_name")
@@ -177,7 +173,7 @@ class Tracker:
 
     def set_limits_trackbar( self, value ):
         for k, v in value.items( ):
-            if k in self.filters:
+            if k in self.settings["filters"]:
                 v[0] = self.get_upper_trackbar( k )
                 v[1] = self.get_lower_trackbar( k )
 
@@ -185,7 +181,7 @@ class Tracker:
     # Usage: self.show( "window_name", image_matrix )
 
     def show( self, win_name, value ):
-        if self.display:
+        if self.settings["display"]:
             cv2.imshow( win_name, value )
 
     # Gets the largest bounding box by area of a colorspace within the upper and lower values
@@ -204,7 +200,7 @@ class Tracker:
         #msk = cv2.blur(msk,(5,5))
         msk = cv2.erode(msk, None, iterations=3) # erode the image to reduce background noise
         msk = cv2.dilate(msk, None, iterations=3) # dilate the image to reduce background noise
-        if self.display: # if the display is true,
+        if self.settings["display"]: # if the display is true,
             self.show( str(win)+ " Image", msk ) # show the binary range image
         # Get the image contours in the mask
         im2, contours, hierarchy = cv2.findContours( msk, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE )
@@ -234,16 +230,17 @@ class Tracker:
 
     def update ( self ):
         cap = self.capture.read( ) # Capture the frame from the webcam
+
         show_cap = cap.copy()
         # Render needed video outputs
-        if self.hsv:
+        if self.settings["hsv"]:
             hsv = cv2.cvtColor( cap, cv2.COLOR_BGR2HSV )
             self.show( 'hsv', hsv )
         if self.track: # if the program should track an item
             for k, v in self.limits.items( ): # Cycle through each item in the limits
-                if k in self.filters: # if the value is in the filters given,
+                if k in self.settings["filters"]: # if the value is in the filters given,
                     v[0] = self.get_upper_trackbar( k ) # set the upper to the trackbar value
                     v[1] = self.get_lower_trackbar( k ) # set the lower to the trackbar value
                 self.get_bounding_rect( k, cap, show_cap, k, v[0], v[1] ) # Get the bounding rect of the capture with limits
-        if self.original:
+        if self.settings["original"]:
             self.show( 'original', show_cap )
