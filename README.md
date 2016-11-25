@@ -9,20 +9,20 @@ This is the main vision repository for Saguaro High School robotics team's compu
 
 The current file tree is as follows: 
 
-.
-├── arch_light_track.py
-├── log.py
-├── README.md
-├── saber_track.py
-├── scripts
-│   ├── install_cv_arch.sh
-│   ├── install_cv_deb.sh
-│   ├── install_deps.cmd
-│   └── install_deps.sh
-├── settings.json
-├── test.sh
-├── todo.md
-└── track.py
+.<br>
+├── arch_light_track.py<br>
+├── log.py<br>
+├── README.md<br>
+├── saber_track.py<br>
+├── scripts<br>
+│   ├── install_cv_arch.sh<br>
+│   ├── install_cv_deb.sh<br>
+│   ├── install_deps.cmd<br>
+│   └── install_deps.sh<br>
+├── settings.json<br>
+├── test.sh<br>
+├── todo.md<br>
+└── track.py<br>
 
 All of the installation scripts are located in `/scripts/`
 `arch_light_track.py` is a stipped down vision processing program for use on the raspberry pi.
