@@ -1,0 +1,11 @@
+{
+  "port" : "",
+  "filters": "one_filter two_filter",
+  "hsv": "",
+  "original": "True",
+  "display": "True",
+  "in_file": "",
+  "out_file": "",
+  "log_name": "debug_log",
+  "vidmode" : "0"
+}

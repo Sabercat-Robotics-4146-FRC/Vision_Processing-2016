@@ -7,7 +7,7 @@ import log
 from networktables import NetworkTable
 import logging
 import time
-__version__ = "0.0.3"
+__version__ = "0.0.5"
 __description__ = """
 The Tracker class provides a streamlined method of working with object tracking
 Written by GowanR
