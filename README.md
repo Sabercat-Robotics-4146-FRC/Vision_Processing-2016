@@ -1,4 +1,7 @@
-<center><img src="./img/sabercat.jpg"style="width:40%"></center>
+<center><img src="./img/head-raw-large.png"style="width:40%"></center>
+
+<center>[Email Us!](mailto:sabercatrobotics@gmail.com "The Sabercats")
+[Our Website](http://sabercatrobotics.com/ "sabercatrobotics.com")</center>
 
 # Sabercat Robotics Vision Processing Utilities
 
@@ -7,7 +10,7 @@
 
 This is the main vision repository for Saguaro High School robotics team's computer vision code. We are FRC team 4146, the Sabercats. The objective of the code is to provide tooling for designing vision systems as well as providing a fast in-game vision processing.
 
-The current file tree is as follows: 
+The current file tree is as follows:
 
 .<br>
 ├── arch_light_track.py<br>
@@ -29,11 +32,11 @@ All of the installation scripts are located in `/scripts/`
 `track.py` is the entry point of the vision tuning application.
 `settings.json` can be used as settings for the application.
 `saber_track.py` contains the most of the application code.
- 
+
 ## Quick Example
 --------------
 
-There is only one cli argument now! This is the settings. The arguemnt defines the filename of the `.json` settings file. 
+There is only one cli argument now! This is the settings. The arguemnt defines the filename of the `.json` settings file.
 
 ```
 python track.py -s settings
@@ -64,7 +67,7 @@ Here is an example of the json settings file. These are all of the current possi
 - *in_file* string of what to name the input file.
 - *out_file* string name of output file that stores hsv color thresholds.
 - *log_name* name of debug log.
-- *vidmode* int camera number. 
+- *vidmode* int camera number.
 ## Filters
 ----------
 
@@ -124,7 +127,7 @@ The debug log generated should be located in `debug_log.log` where log name is t
 
 
 ### Install Arch on the Rapsberry Pi
-Essentially, just follow this [thread](https://www.raspberrypi.org/forums/viewtopic.php?f=91&t=109545) 
+Essentially, just follow this [thread](https://www.raspberrypi.org/forums/viewtopic.php?f=91&t=109545)
 
 When installing opencv, login to root with username: `root` and password: `root`
 
@@ -133,7 +136,7 @@ When installing opencv, login to root with username: `root` and password: `root`
 
 ### Windows
 
-The best way to install opencv for python is to get [Anaconda](https://www.continuum.io/downloads). This is a python distribution with its own package manager that is more powerful than `pip`. This packagemanager is called `conda`. This allows you to easily install numpy on windows. [Numpy](https://anaconda.org/anaconda/numpy) for Anaconda. When Anacona is installed, make sure it works. In `cmd`, run `python`. This should open up a REPL that will prompt you with `>>>`. You should then be able to `import numpy` if this fails, you did something wrong. 
+The best way to install opencv for python is to get [Anaconda](https://www.continuum.io/downloads). This is a python distribution with its own package manager that is more powerful than `pip`. This packagemanager is called `conda`. This allows you to easily install numpy on windows. [Numpy](https://anaconda.org/anaconda/numpy) for Anaconda. When Anacona is installed, make sure it works. In `cmd`, run `python`. This should open up a REPL that will prompt you with `>>>`. You should then be able to `import numpy` if this fails, you did something wrong.
 Run the `install_deps` script. `install_deps.cmd`.
 Now, you should [Install](http://docs.opencv.org/3.1.0/d5/de5/tutorial_py_setup_in_windows.html#gsc.tab=0) opencv 3.0 python.
 
