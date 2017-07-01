@@ -94,7 +94,7 @@ You'll want to adjust the color space in the enviroment you will use it in. This
 For instance if you are trying to track the goal, you should go to the practice match and adjust the HSV values.
 
 
-```
+```sh
 python arch_light_track.py test.json 192.168.1.2
 ```
 

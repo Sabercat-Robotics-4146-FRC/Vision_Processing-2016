@@ -10,3 +10,4 @@
  - Update Documentation
  - code cleanup
  - code optimization
+ - CUDA gpu version in cpp
