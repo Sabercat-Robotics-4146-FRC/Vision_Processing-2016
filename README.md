@@ -1,4 +1,4 @@
-<center><img src="./img/head-raw-large.png"style="width:40%"></center>
+<center><img src="./img/head-raw-large.png"style="width:20%"></center>
 
 [Email Us!](mailto:sabercatrobotics@gmail.com "The Sabercats")
 
