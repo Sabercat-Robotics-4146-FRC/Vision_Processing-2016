@@ -1,7 +1,9 @@
 <center><img src="./img/head-raw-large.png"style="width:40%"></center>
 
-<center>[Email Us!](mailto:sabercatrobotics@gmail.com "The Sabercats")
-[Our Website](http://sabercatrobotics.com/ "sabercatrobotics.com")</center>
+[Email Us!](mailto:sabercatrobotics@gmail.com "The Sabercats")
+
+
+[Our Website](http://sabercatrobotics.com/ "sabercatrobotics.com")
 
 # Sabercat Robotics Vision Processing Utilities
 
@@ -111,12 +113,12 @@ The debug log generated should be located in `debug_log.log` where log name is t
 
 ## Versions
 ------------------
-*0.0.5* json settings format added, cli settings removed.
-*0.0.4* Switched to json track serialization. Runs on arch now.
-*0.0.3* Added tagging support. Fixed bugs. Cleaned code. Added more documentation.
-*0.0.2* Added multiple filtering capabilities.
-*0.0.1* Added more modes and file I/O. Cleaned code.
-*0.0.0* Base opencv HSV filtering and trackbar.
+- *0.0.5* json settings format added, cli settings removed.
+- *0.0.4* Switched to json track serialization. Runs on arch now.
+- *0.0.3* Added tagging support. Fixed bugs. Cleaned code. Added more documentation.
+- *0.0.2* Added multiple filtering capabilities.
+- *0.0.1* Added more modes and file I/O. Cleaned code.
+- *0.0.0* Base opencv HSV filtering and trackbar.
 
 ### Current utilities include:
 - ```log.py``` is a simple logging module for streamlined debugging and records (cv2 independent)
